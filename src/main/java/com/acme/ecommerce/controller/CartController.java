@@ -124,7 +124,7 @@ public class CartController {
     	
     	Product updateProduct = productService.findById(productId);
 		int storedQuantity = updateProduct.getQuantity();
-    	if (updateProduct != null && storedQuantity >= newQuantity) {
+    	if (updateProduct != null) {
 			Purchase purchase = sCart.getPurchase();
 			if (purchase == null) {
 				logger.error("Unable to find shopping cart for update");
@@ -133,32 +133,37 @@ public class CartController {
 				for (ProductPurchase pp : purchase.getProductPurchases()) {
 					if (pp.getProduct() != null) {
 						if (pp.getProduct().getId().equals(productId)) {
-							if (newQuantity > 0) {
-								int oldQuantity = pp.getQuantity();
+                            int oldQuantity = pp.getQuantity();
+                            if (newQuantity > 0  && storedQuantity + pp.getQuantity() >= newQuantity) {
 
-								pp.setQuantity(newQuantity);
-
-								if (newQuantity >= oldQuantity) {
+                                pp.setQuantity(newQuantity);
+                                if (newQuantity == oldQuantity) {
+                                    logger.debug("Quantity of product " + updateProduct.getName() + " stayed the same");
+                                    return redirect;
+                                } else if (newQuantity > oldQuantity) {
 									updateProduct.setQuantity((storedQuantity + oldQuantity) - newQuantity);
 								} else if (newQuantity < oldQuantity) {
-									updateProduct.setQuantity(storedQuantity + newQuantity);
+									updateProduct.setQuantity(storedQuantity + (oldQuantity - newQuantity));
 								}
-								productService.save(updateProduct);
 
-								logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
-							} else {
-								purchase.getProductPurchases().remove(pp);
-								logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
-							}
-							break;
+                                logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
+                            }  else if (storedQuantity < newQuantity) {
+                                logger.error("Attempt to update to a higher quantity than available");
+                                redirect.setUrl("/error");
+                            }  else {
+                                purchase.getProductPurchases().remove(pp);
+
+                                updateProduct.setQuantity(storedQuantity + oldQuantity);
+
+                                logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
+                            }
+                            productService.save(updateProduct);
+                            break;
 						}
 					}
 				}
 			}
 			sCart.setPurchase(purchaseService.save(purchase));
-		} else if (storedQuantity < newQuantity) {
-			logger.error("Attempt to update to a higher quantity than available");
-			redirect.setUrl("/error");
 		} else {
     		logger.error("Attempt to update on non-existent product");
     		redirect.setUrl("/error");
