@@ -138,6 +138,8 @@ public class CartController {
                             if (newQuantity > 0  && stockQuantity + pp.getQuantity() >= newQuantity) {
 
                                 pp.setQuantity(newQuantity);
+
+								// Update stock quantity accordingly
                                 if (newQuantity == oldQuantity) {
                                     logger.debug("Quantity of product " + updateProduct.getName() + " stayed the same");
                                     return redirect;
