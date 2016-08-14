@@ -68,8 +68,8 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-		int storedQuantity = addProduct.getQuantity();
-		if (addProduct != null && storedQuantity >= quantity) {
+		int stockQuantity = addProduct.getQuantity();
+		if (addProduct != null && stockQuantity >= quantity) {
 			logger.debug("Adding Product: " + addProduct.getId());
 
 			Purchase purchase = sCart.getPurchase();
@@ -82,7 +82,8 @@ public class CartController {
 						if (pp.getProduct().getId().equals(productId)) {
 							pp.setQuantity(pp.getQuantity() + quantity);
 
-							addProduct.setQuantity(storedQuantity - quantity);
+							// Update stock quantity
+							addProduct.setQuantity(stockQuantity - quantity);
 							productService.save(addProduct);
 
 							productAlreadyInCart = true;
@@ -96,16 +97,16 @@ public class CartController {
 				newProductPurchase.setProduct(addProduct);
 				newProductPurchase.setQuantity(quantity);
 
-				addProduct.setQuantity(storedQuantity - quantity);
+				// Update stock quantity
+				addProduct.setQuantity(stockQuantity - quantity);
 				productService.save(addProduct);
-
 
 				newProductPurchase.setPurchase(purchase);
 				purchase.getProductPurchases().add(newProductPurchase);
 			}
 			logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
 			sCart.setPurchase(purchaseService.save(purchase));
-		} else if(storedQuantity < quantity) {
+		} else if(stockQuantity < quantity) {
 			logger.error("Attempt to add higher quantity of product than available: " + productId);
 			redirect.setUrl("/error");
 		} else {
@@ -123,7 +124,7 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-		int storedQuantity = updateProduct.getQuantity();
+		int stockQuantity = updateProduct.getQuantity();
     	if (updateProduct != null) {
 			Purchase purchase = sCart.getPurchase();
 			if (purchase == null) {
@@ -134,29 +135,30 @@ public class CartController {
 					if (pp.getProduct() != null) {
 						if (pp.getProduct().getId().equals(productId)) {
                             int oldQuantity = pp.getQuantity();
-                            if (newQuantity > 0  && storedQuantity + pp.getQuantity() >= newQuantity) {
+                            if (newQuantity > 0  && stockQuantity + pp.getQuantity() >= newQuantity) {
 
                                 pp.setQuantity(newQuantity);
                                 if (newQuantity == oldQuantity) {
                                     logger.debug("Quantity of product " + updateProduct.getName() + " stayed the same");
                                     return redirect;
                                 } else if (newQuantity > oldQuantity) {
-									updateProduct.setQuantity((storedQuantity + oldQuantity) - newQuantity);
+									updateProduct.setQuantity((stockQuantity + oldQuantity) - newQuantity);
 								} else if (newQuantity < oldQuantity) {
-									updateProduct.setQuantity(storedQuantity + (oldQuantity - newQuantity));
+									updateProduct.setQuantity(stockQuantity + (oldQuantity - newQuantity));
 								}
 
                                 logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
-                            }  else if (storedQuantity < newQuantity) {
+                            }  else if (stockQuantity < newQuantity) {
                                 logger.error("Attempt to update to a higher quantity than available");
                                 redirect.setUrl("/error");
                             }  else {
                                 purchase.getProductPurchases().remove(pp);
 
-                                updateProduct.setQuantity(storedQuantity + oldQuantity);
+                                updateProduct.setQuantity(stockQuantity + oldQuantity);
 
                                 logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
                             }
+                            // Save updated stock quantity
                             productService.save(updateProduct);
                             break;
 						}
