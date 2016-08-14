@@ -68,7 +68,7 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-		long storedQuantity = addProduct.getQuantity();
+		int storedQuantity = addProduct.getQuantity();
 		if (addProduct != null && storedQuantity >= quantity) {
 			logger.debug("Adding Product: " + addProduct.getId());
 
@@ -81,6 +81,10 @@ public class CartController {
 					if (pp.getProduct() != null) {
 						if (pp.getProduct().getId().equals(productId)) {
 							pp.setQuantity(pp.getQuantity() + quantity);
+
+							addProduct.setQuantity(storedQuantity - quantity);
+							productService.save(addProduct);
+
 							productAlreadyInCart = true;
 							break;
 						}
@@ -91,6 +95,11 @@ public class CartController {
 				ProductPurchase newProductPurchase = new ProductPurchase();
 				newProductPurchase.setProduct(addProduct);
 				newProductPurchase.setQuantity(quantity);
+
+				addProduct.setQuantity(storedQuantity - quantity);
+				productService.save(addProduct);
+
+
 				newProductPurchase.setPurchase(purchase);
 				purchase.getProductPurchases().add(newProductPurchase);
 			}
@@ -114,7 +123,7 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-		long storedQuantity = updateProduct.getQuantity();
+		int storedQuantity = updateProduct.getQuantity();
     	if (updateProduct != null && storedQuantity >= newQuantity) {
 			Purchase purchase = sCart.getPurchase();
 			if (purchase == null) {
@@ -125,7 +134,17 @@ public class CartController {
 					if (pp.getProduct() != null) {
 						if (pp.getProduct().getId().equals(productId)) {
 							if (newQuantity > 0) {
+								int oldQuantity = pp.getQuantity();
+
 								pp.setQuantity(newQuantity);
+
+								if (newQuantity >= oldQuantity) {
+									updateProduct.setQuantity((storedQuantity + oldQuantity) - newQuantity);
+								} else if (newQuantity < oldQuantity) {
+									updateProduct.setQuantity(storedQuantity + newQuantity);
+								}
+								productService.save(updateProduct);
+
 								logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
 							} else {
 								purchase.getProductPurchases().remove(pp);
