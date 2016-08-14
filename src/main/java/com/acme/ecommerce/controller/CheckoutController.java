@@ -74,14 +74,14 @@ public class CheckoutController {
 	@RequestMapping(path="/coupon", method = RequestMethod.POST)
 	String postCouponCode(Model model, @ModelAttribute(value="couponCode") @Valid CouponCode couponCode,
                           final BindingResult result, RedirectAttributes redirectAttributes) {
-		if (result.hasErrors()) {
+		if (result.hasErrors() && !couponCode.getCode().isEmpty()) {
             logger.error("Errors on fields: " + result.getFieldErrorCount());
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.couponCode", result);
             redirectAttributes.addFlashAttribute("couponCode", couponCode);
-            return String.format("redirect:coupon");
+            return "redirect:coupon";
         }
     	sCart.setCouponCode(couponCode);
-   	
+
 		return "redirect:shipping";
 	}
 	
