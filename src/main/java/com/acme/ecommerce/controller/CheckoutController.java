@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import javax.naming.Binding;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedInputStream;
@@ -60,7 +61,9 @@ public class CheckoutController {
     		subTotal = computeSubtotal(purchase, couponCode);
     		
     		model.addAttribute("subTotal", subTotal);
-    		model.addAttribute("couponCode", couponCode);
+            if (!model.containsAttribute("couponCode")) {
+                model.addAttribute("couponCode", couponCode);
+            }
     	} else {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
@@ -69,7 +72,14 @@ public class CheckoutController {
 	}
 
 	@RequestMapping(path="/coupon", method = RequestMethod.POST)
-	String postCouponCode(Model model, @ModelAttribute(value="couponCode") CouponCode couponCode) {
+	String postCouponCode(Model model, @ModelAttribute(value="couponCode") @Valid CouponCode couponCode,
+                          final BindingResult result, RedirectAttributes redirectAttributes) {
+		if (result.hasErrors()) {
+            logger.error("Errors on fields: " + result.getFieldErrorCount());
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.couponCode", result);
+            redirectAttributes.addFlashAttribute("couponCode", couponCode);
+            return String.format("redirect:coupon");
+        }
     	sCart.setCouponCode(couponCode);
    	
 		return "redirect:shipping";
