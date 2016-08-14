@@ -68,33 +68,37 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-		if (addProduct != null) {
-	    	logger.debug("Adding Product: " + addProduct.getId());
-	    	
-    		Purchase purchase = sCart.getPurchase();
-    		if (purchase == null) {
-    			purchase = new Purchase();
-    			sCart.setPurchase(purchase);
-    		} else {
-    			for (ProductPurchase pp : purchase.getProductPurchases()) {
-    				if (pp.getProduct() != null) {
-    					if (pp.getProduct().getId().equals(productId)) {
-    						pp.setQuantity(pp.getQuantity() + quantity);
-    						productAlreadyInCart = true;
-    						break;
-    					}
-    				}
-    			}
-    		}
-    		if (!productAlreadyInCart) {
-    			ProductPurchase newProductPurchase = new ProductPurchase();
-    			newProductPurchase.setProduct(addProduct);
-    			newProductPurchase.setQuantity(quantity);
-    			newProductPurchase.setPurchase(purchase);
-        		purchase.getProductPurchases().add(newProductPurchase);
-    		}
-    		logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-    		sCart.setPurchase(purchaseService.save(purchase));
+		long storedQuantity = addProduct.getQuantity();
+		if (addProduct != null && storedQuantity >= quantity) {
+			logger.debug("Adding Product: " + addProduct.getId());
+
+			Purchase purchase = sCart.getPurchase();
+			if (purchase == null) {
+				purchase = new Purchase();
+				sCart.setPurchase(purchase);
+			} else {
+				for (ProductPurchase pp : purchase.getProductPurchases()) {
+					if (pp.getProduct() != null) {
+						if (pp.getProduct().getId().equals(productId)) {
+							pp.setQuantity(pp.getQuantity() + quantity);
+							productAlreadyInCart = true;
+							break;
+						}
+					}
+				}
+			}
+			if (!productAlreadyInCart) {
+				ProductPurchase newProductPurchase = new ProductPurchase();
+				newProductPurchase.setProduct(addProduct);
+				newProductPurchase.setQuantity(quantity);
+				newProductPurchase.setPurchase(purchase);
+				purchase.getProductPurchases().add(newProductPurchase);
+			}
+			logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
+			sCart.setPurchase(purchaseService.save(purchase));
+		} else if(storedQuantity < quantity) {
+			logger.error("Attempt to add higher quantity of product than available: " + productId);
+			redirect.setUrl("/error");
 		} else {
 			logger.error("Attempt to add unknown product: " + productId);
 			redirect.setUrl("/error");
