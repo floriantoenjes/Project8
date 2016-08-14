@@ -114,29 +114,33 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-    	if (updateProduct != null) {
-    		Purchase purchase = sCart.getPurchase();
-    		if (purchase == null) {
-    			logger.error("Unable to find shopping cart for update");
-    			redirect.setUrl("/error");
-    		} else {
-    			for (ProductPurchase pp : purchase.getProductPurchases()) {
-    				if (pp.getProduct() != null) {
-    					if (pp.getProduct().getId().equals(productId)) {
-    						if (newQuantity > 0) {
-    							pp.setQuantity(newQuantity);
-    							logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
-    						} else {
-    							purchase.getProductPurchases().remove(pp);
-    							logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
-    						}
-    						break;
-    					}
-    				}
-    			}
-    		}
-    		sCart.setPurchase(purchaseService.save(purchase));
-    	} else {
+		long storedQuantity = updateProduct.getQuantity();
+    	if (updateProduct != null && storedQuantity >= newQuantity) {
+			Purchase purchase = sCart.getPurchase();
+			if (purchase == null) {
+				logger.error("Unable to find shopping cart for update");
+				redirect.setUrl("/error");
+			} else {
+				for (ProductPurchase pp : purchase.getProductPurchases()) {
+					if (pp.getProduct() != null) {
+						if (pp.getProduct().getId().equals(productId)) {
+							if (newQuantity > 0) {
+								pp.setQuantity(newQuantity);
+								logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
+							} else {
+								purchase.getProductPurchases().remove(pp);
+								logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
+							}
+							break;
+						}
+					}
+				}
+			}
+			sCart.setPurchase(purchaseService.save(purchase));
+		} else if (storedQuantity < newQuantity) {
+			logger.error("Attempt to update to a higher quantity than available");
+			redirect.setUrl("/error");
+		} else {
     		logger.error("Attempt to update on non-existent product");
     		redirect.setUrl("/error");
     	}
