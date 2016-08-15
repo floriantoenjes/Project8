@@ -183,13 +183,21 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
+		int stockQuantity = updateProduct.getQuantity();
     	if (updateProduct != null) {
     		Purchase purchase = sCart.getPurchase();
     		if (purchase != null) {
     			for (ProductPurchase pp : purchase.getProductPurchases()) {
     				if (pp.getProduct() != null) {
     					if (pp.getProduct().getId().equals(productId)) {
+    						int purchaseQuantity = pp.getQuantity();
     						purchase.getProductPurchases().remove(pp);
+
+							// Update stock quantity
+							Product product = pp.getProduct();
+							product.setQuantity(stockQuantity + purchaseQuantity);
+							productService.save(product);
+
    							logger.debug("Removed " + updateProduct.getName());
     						break;
     					}
