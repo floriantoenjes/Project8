@@ -265,6 +265,39 @@ public class CartControllerTest {
 				.andExpect(redirectedUrl("/error"));
 	}
 
+	@Test
+	public void addQuantityHigherThanAvailableTest() throws Exception {
+		final String QUANTITY_HIGHER_THAN_AVAILABLE = "6";
+
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/add").param("quantity", QUANTITY_HIGHER_THAN_AVAILABLE)
+				.param("productId", "1"))
+				.andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/cart"));
+	}
+
+	@Test
+	public void updateQuantityHigherThanAvailableTest() throws Exception {
+		final String QUANTITY_HIGHER_THAN_AVAILABLE = "6";
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		Purchase purchase = purchaseBuilder(product);
+
+		when(sCart.getPurchase()).thenReturn(purchase);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/update").param("newQuantity", QUANTITY_HIGHER_THAN_AVAILABLE)
+				.param("productId", "1"))
+				.andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/cart"));
+	}
+
 	private Product productBuilder() {
 		Product product = new Product();
 		product.setId(1L);
