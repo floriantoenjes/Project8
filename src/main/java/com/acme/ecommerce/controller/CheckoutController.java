@@ -234,18 +234,29 @@ public class CheckoutController {
     	
     	model.addAttribute("purchase", purchase);
     	if (purchase != null) {
-    		subTotal = computeSubtotal(purchase, couponCode);
-    		shippingCost = computeShippingCost(purchase);
-    		BigDecimal orderTotal = subTotal.add(shippingCost);
+			subTotal = computeSubtotal(purchase, couponCode);
+			shippingCost = computeShippingCost(purchase);
+			BigDecimal orderTotal = subTotal.add(shippingCost);
 
-    		model.addAttribute("subTotal", subTotal);
-    		model.addAttribute("shippingCost", shippingCost);
-    		model.addAttribute("orderTotal", orderTotal);
-    		
-    		model.addAttribute("orderNumber", purchase.getOrderNumber());
-    		model.addAttribute("shippingAddress", purchase.getShippingAddress());
-    		model.addAttribute("billingAddress", purchase.getBillingAddress());
-    		model.addAttribute("creditCard", purchase.getCreditCardNumber());
+			model.addAttribute("subTotal", subTotal);
+			model.addAttribute("shippingCost", shippingCost);
+			model.addAttribute("orderTotal", orderTotal);
+
+			model.addAttribute("orderNumber", purchase.getOrderNumber());
+			model.addAttribute("shippingAddress", purchase.getShippingAddress());
+			model.addAttribute("billingAddress", purchase.getBillingAddress());
+
+			// Mask all but last four digits of cc number
+			String credictCardNumber = purchase.getCreditCardNumber();
+			StringBuilder sb = new StringBuilder();
+			if (credictCardNumber != null && credictCardNumber.length() > 4) {
+				for (int i = 0; i < credictCardNumber.length() - 4; i++) {
+					sb.append("*");
+				}
+				sb.append(credictCardNumber.substring(credictCardNumber.length() - 4));
+			}
+			String maskedCCNumber = sb.toString();
+			model.addAttribute("creditCard", maskedCCNumber);
     	} else {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
