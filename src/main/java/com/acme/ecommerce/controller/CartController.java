@@ -229,6 +229,14 @@ public class CartController {
     	logger.debug("Emptying Cart");
     	Purchase purchase = sCart.getPurchase();
 		if (purchase != null) {
+			// Update stock quantities
+			for (ProductPurchase pp : purchase.getProductPurchases()) {
+				Product product = pp.getProduct();
+				int stockQuantity = product.getQuantity();
+
+				product.setQuantity(stockQuantity + pp.getQuantity());
+				productService.save(product);
+			}
 			purchase.getProductPurchases().clear();
 			sCart.setPurchase(purchaseService.save(purchase));
 		} else {
