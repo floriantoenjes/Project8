@@ -278,8 +278,11 @@ public class CheckoutController {
 
 	    		ctx.setVariable("orderNumber", purchase.getOrderNumber());
 	    		ctx.setVariable("shippingAddress", purchase.getShippingAddress());
-	    		ctx.setVariable("billingAddress", purchase.getBillingAddress());
+
+				/* Remove billing address and credit card info
+				ctx.setVariable("billingAddress", purchase.getBillingAddress());
 	    		ctx.setVariable("creditCard", purchase.getCreditCardNumber());
+	    		*/
 
 	    		final String htmlContent = this.templateEngine.process("email_confirmation", ctx);
 
