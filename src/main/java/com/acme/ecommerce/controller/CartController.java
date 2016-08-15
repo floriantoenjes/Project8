@@ -55,10 +55,10 @@ public class CartController {
     		}
     		
     		model.addAttribute("subTotal", subTotal);
-    	} /*else {
+    	} else {
     		logger.error("No purchases Found for session ID=" + session.getId());
     		return "redirect:/error";
-    	}*/
+    	}
         return "cart";
     }
     
@@ -71,7 +71,10 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-		int stockQuantity = addProduct.getQuantity();
+		int stockQuantity = 0;
+		if (addProduct != null) {
+			stockQuantity = addProduct.getQuantity();
+		}
 		if (addProduct != null && stockQuantity >= quantity) {
 			logger.debug("Adding Product: " + addProduct.getId());
 
@@ -109,7 +112,7 @@ public class CartController {
 			}
 			logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
 			sCart.setPurchase(purchaseService.save(purchase));
-		} else if(stockQuantity < quantity) {
+		} else if(stockQuantity < quantity && addProduct != null) {
 			logger.error("Attempt to add higher quantity of product than available: " + productId);
 			redirectAttributes.addFlashAttribute("error", "quantity");
 			redirect.setUrl("/cart");
@@ -130,7 +133,10 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-		int stockQuantity = updateProduct.getQuantity();
+		int stockQuantity = 0;
+		if (updateProduct != null) {
+			stockQuantity = updateProduct.getQuantity();
+		}
     	if (updateProduct != null) {
 			Purchase purchase = sCart.getPurchase();
 			if (purchase == null) {
@@ -190,7 +196,10 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-		int stockQuantity = updateProduct.getQuantity();
+		int stockQuantity = 0;
+		if (updateProduct != null) {
+			stockQuantity = updateProduct.getQuantity();
+		}
     	if (updateProduct != null) {
     		Purchase purchase = sCart.getPurchase();
     		if (purchase != null) {
