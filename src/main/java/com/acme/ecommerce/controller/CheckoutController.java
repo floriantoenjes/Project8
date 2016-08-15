@@ -17,7 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.naming.Binding;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedInputStream;
@@ -246,17 +245,7 @@ public class CheckoutController {
 			model.addAttribute("shippingAddress", purchase.getShippingAddress());
 			model.addAttribute("billingAddress", purchase.getBillingAddress());
 
-			// Mask all but last four digits of cc number
-			String credictCardNumber = purchase.getCreditCardNumber();
-			StringBuilder sb = new StringBuilder();
-			if (credictCardNumber != null && credictCardNumber.length() > 4) {
-				for (int i = 0; i < credictCardNumber.length() - 4; i++) {
-					sb.append("*");
-				}
-				sb.append(credictCardNumber.substring(credictCardNumber.length() - 4));
-			}
-			String maskedCCNumber = sb.toString();
-			model.addAttribute("creditCard", maskedCCNumber);
+			model.addAttribute("creditCard", getMaskedCCNumber(purchase));
     	} else {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
@@ -264,7 +253,7 @@ public class CheckoutController {
     	
 		return "order_confirmation";
 	}
-	
+
 	@RequestMapping(value = "/email", method = RequestMethod.GET)
 	public void getFile(HttpServletResponse response) {
 		// simulating an email receipt
@@ -276,7 +265,7 @@ public class CheckoutController {
 	    	BigDecimal subTotal = new BigDecimal(0);
 	       	BigDecimal shippingCost = new BigDecimal(0);
 	    	CouponCode couponCode = sCart.getCouponCode();
-	    	
+
 	    	ctx.setVariable("purchase", purchase);
 	    	if (purchase != null) {
 	    		subTotal = computeSubtotal(purchase, couponCode);
@@ -286,27 +275,27 @@ public class CheckoutController {
 	    		ctx.setVariable("subTotal", subTotal);
 	    		ctx.setVariable("shippingCost", shippingCost);
 	    		ctx.setVariable("orderTotal", orderTotal);
-	    		
+
 	    		ctx.setVariable("orderNumber", purchase.getOrderNumber());
 	    		ctx.setVariable("shippingAddress", purchase.getShippingAddress());
 	    		ctx.setVariable("billingAddress", purchase.getBillingAddress());
 	    		ctx.setVariable("creditCard", purchase.getCreditCardNumber());
-	    		
+
 	    		final String htmlContent = this.templateEngine.process("email_confirmation", ctx);
-			
+
 		    	response.setHeader("Content-Disposition", "attachment; filename=email_receipt.html");
-		    	
+
 		    	response.setContentType("text/html");
-		    	
+
 		    	InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(htmlContent.getBytes()));
-		    	
+
 		    	FileCopyUtils.copy(inputStream, response.getOutputStream());
-		    	
+
 		    	response.flushBuffer();
 	    	} else {
 	    		logger.error("No purchases Found!");
 	    	}
-	    	
+
 	    	//Order completed, reset in case user wants to order again
 	    	sCart.setCouponCode(null);
 	    	sCart.setPurchase(null);
@@ -315,33 +304,45 @@ public class CheckoutController {
 	      throw new RuntimeException("IOError writing file to output stream");
 	    }
 	}
-	
+
 	private BigDecimal computeSubtotal(Purchase purchase, CouponCode couponCode) {
-		
+
 		BigDecimal subTotal = new BigDecimal(0);
-		
+
 		for (ProductPurchase pp : purchase.getProductPurchases()) {
 			logger.debug("cart has " + pp.getQuantity() + " of " + pp.getProduct().getName() + " at " + "$" + pp.getProduct().getPrice());
 			subTotal = subTotal.add(pp.getProduct().getPrice().multiply(new BigDecimal(pp.getQuantity())));
 		}
-		
+
 		if (couponCode.getCode() != null && !couponCode.getCode().isEmpty()) {
 			logger.info("Applying discount for coupon");
 			subTotal = subTotal.multiply(new BigDecimal(0.9));
 		}
-		
+
 		return subTotal;
 	}
-	
+
 	private BigDecimal computeShippingCost(Purchase purchase) {
 		BigDecimal shippingCost = new BigDecimal(0);
-		
+
 		for (ProductPurchase pp : purchase.getProductPurchases()) {
 			BigDecimal itemShippingCost = new BigDecimal(0).add(COST_PER_ITEM.multiply(new BigDecimal(pp.getQuantity())));
 			logger.debug("cart has " + pp.getQuantity() + " of " + pp.getProduct().getName() + " shipping cost of " + itemShippingCost);
 			shippingCost = shippingCost.add(itemShippingCost);
 		}
-		
+
 		return shippingCost;
+	}
+
+	private String getMaskedCCNumber(Purchase purchase) {
+		String credictCardNumber = purchase.getCreditCardNumber();
+		StringBuilder sb = new StringBuilder();
+		if (credictCardNumber != null && credictCardNumber.length() > 4) {
+			for (int i = 0; i < credictCardNumber.length() - 4; i++) {
+				sb.append("*");
+			}
+			sb.append(credictCardNumber.substring(credictCardNumber.length() - 4));
+		}
+		return sb.toString();
 	}
 }
