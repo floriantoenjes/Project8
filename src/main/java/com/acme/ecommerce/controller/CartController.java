@@ -108,7 +108,7 @@ public class CartController {
 			sCart.setPurchase(purchaseService.save(purchase));
 		} else if(stockQuantity < quantity) {
 			logger.error("Attempt to add higher quantity of product than available: " + productId);
-			redirect.setUrl("/error");
+			redirect.setUrl("/cart");
 		} else {
 			logger.error("Attempt to add unknown product: " + productId);
 			redirect.setUrl("/error");
@@ -152,7 +152,7 @@ public class CartController {
                                 logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
                             }  else if (stockQuantity < newQuantity) {
                                 logger.error("Attempt to update to a higher quantity than available");
-                                redirect.setUrl("/error");
+                                redirect.setUrl("/cart");
                             }  else {
                                 purchase.getProductPurchases().remove(pp);
 
