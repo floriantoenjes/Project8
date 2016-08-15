@@ -133,11 +133,8 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-		int stockQuantity = 0;
 		if (updateProduct != null) {
-			stockQuantity = updateProduct.getQuantity();
-		}
-    	if (updateProduct != null) {
+			int stockQuantity = updateProduct.getQuantity();
 			Purchase purchase = sCart.getPurchase();
 			if (purchase == null) {
 				logger.error("Unable to find shopping cart for update");
@@ -196,12 +193,9 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-		int stockQuantity = 0;
 		if (updateProduct != null) {
-			stockQuantity = updateProduct.getQuantity();
-		}
-    	if (updateProduct != null) {
-    		Purchase purchase = sCart.getPurchase();
+			int stockQuantity = updateProduct.getQuantity();
+			Purchase purchase = sCart.getPurchase();
     		if (purchase != null) {
     			for (ProductPurchase pp : purchase.getProductPurchases()) {
     				if (pp.getProduct() != null) {
