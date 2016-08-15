@@ -54,10 +54,10 @@ public class CartController {
     		}
     		
     		model.addAttribute("subTotal", subTotal);
-    	} else {
+    	} /*else {
     		logger.error("No purchases Found for session ID=" + session.getId());
     		return "redirect:/error";
-    	}
+    	}*/
         return "cart";
     }
     
