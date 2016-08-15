@@ -7,6 +7,7 @@ import com.acme.ecommerce.domain.Purchase;
 import com.acme.ecommerce.domain.ShoppingCart;
 import com.acme.ecommerce.service.ProductService;
 import com.acme.ecommerce.service.PurchaseService;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
@@ -265,6 +267,7 @@ public class CartControllerTest {
 				.andExpect(redirectedUrl("/error"));
 	}
 
+
 	@Test
 	public void addQuantityHigherThanAvailableTest() throws Exception {
 		final String QUANTITY_HIGHER_THAN_AVAILABLE = "6";
@@ -277,7 +280,8 @@ public class CartControllerTest {
 				.param("productId", "1"))
 				.andDo(print())
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/cart"));
+				.andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("error", Matchers.equalTo("quantity")));
 	}
 
 	@Test
@@ -295,7 +299,8 @@ public class CartControllerTest {
 				.param("productId", "1"))
 				.andDo(print())
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/cart"));
+				.andExpect(redirectedUrl("/cart"))
+        .andExpect(flash().attribute("error", Matchers.equalTo("quantity")));
 	}
 
 	private Product productBuilder() {
