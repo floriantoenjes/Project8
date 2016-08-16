@@ -82,6 +82,21 @@ public class CartControllerTest {
 	}
 
 	@Test
+	public void viewCartSubtotalHeaderTest() throws Exception {
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		Purchase purchase = purchaseBuilder(product);
+
+		when(sCart.getPurchase()).thenReturn(purchase);
+		mockMvc.perform(MockMvcRequestBuilders.get("/cart")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(view().name("cart"))
+				.andExpect(model().attribute("subTotal", Matchers.equalTo(product.getPrice())));
+	}
+
+	@Test
 	public void viewCartNoPurchasesTest() throws Exception {
 
 		when(sCart.getPurchase()).thenReturn(null);
