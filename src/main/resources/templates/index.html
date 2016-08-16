@@ -18,7 +18,7 @@
                 <ul>
                     <li><a href="#">About</a></li>
                     <li><a href="#">FAQ</a></li>
-                    <li><a name="cartButton" class="button icon-right" href="/cart">View Cart <i class="material-icons">shopping_cart</i></a></li>
+                    <li><a name="cartButton" class="button icon-right" href="/cart" th:text="${subTotal != null} ?  ${'$' + #numbers.formatDecimal(subTotal, 1, 2, 'POINT') + ' View Cart'} : 'View Cart'">View Cart <i class="material-icons">shopping_cart</i></a></li>
                 </ul>
             </nav>
         </header>

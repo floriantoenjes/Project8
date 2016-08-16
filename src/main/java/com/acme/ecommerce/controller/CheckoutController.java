@@ -60,6 +60,7 @@ public class CheckoutController {
     		subTotal = computeSubtotal(purchase, couponCode);
     		
     		model.addAttribute("subTotal", subTotal);
+
             if (!model.containsAttribute("couponCode")) {
                 model.addAttribute("couponCode", couponCode);
             }
