@@ -58,7 +58,7 @@ public class ProductController {
     	Page<Product> products = productService.findAll(new PageRequest(evalPage, PAGE_SIZE));
     	
 		model.addAttribute("products", products);
-		if (sCart.getPurchase() != null) {
+		if (sCart != null && sCart.getPurchase() != null) {
 			BigDecimal subTotal = computeSubtotal(sCart.getPurchase(), new CouponCode());
 			if (!subTotal.equals(new BigDecimal(0))) {
 				model.addAttribute("subTotal", subTotal);
@@ -80,7 +80,7 @@ public class ProductController {
     		productPurchase.setQuantity(1);
     		model.addAttribute("productPurchase", productPurchase);
 
-			if (sCart.getPurchase() != null) {
+			if (sCart != null && sCart.getPurchase() != null) {
 				BigDecimal subTotal = computeSubtotal(sCart.getPurchase(), new CouponCode());
 				if (!subTotal.equals(new BigDecimal(0))) {
 					model.addAttribute("subTotal", subTotal);
