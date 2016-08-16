@@ -690,6 +690,32 @@ form .error-message {
 	}
 }
 
+/* ==========================================================================
+   Flash Message Styles
+   ========================================================================== */
+
+   #flash {
+        color: white;
+   }
+
+   .flash.success {
+        background-color: green;
+        padding: 0.75em;
+   }
+
+   .flash.failed {
+        background-color: red;
+        padding: 0.75em;
+   }
+
+    .right {
+        float: right;
+        color: white;
+    }
+
+    .right:hover {
+        cursor: pointer;
+    }
 
 
 
