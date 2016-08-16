@@ -110,20 +110,20 @@ public class CartController {
 				}
 				logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
 				sCart.setPurchase(purchaseService.save(purchase));
+
+                redirectAttributes.addFlashAttribute("flash",
+                        new FlashMessage("Product added to cart", FlashMessage.Status.SUCCESS));
 			} else if(stockQuantity < quantity && addProduct != null) {
 				logger.error("Attempt to add higher quantity of product than available: " + productId);
 				redirectAttributes.addFlashAttribute("error", "quantity");
 				redirectAttributes.addFlashAttribute("flash",
-						new FlashMessage("Higher quantity than available", FlashMessage.Status.FAILED));
-				redirect.setUrl("/cart");
+						new FlashMessage("Trying to add higher quantity than available", FlashMessage.Status.FAILED));
+//				redirect.setUrl("/cart");
 			}
 		} else {
 			logger.error("Attempt to add unknown product: " + productId);
 			redirect.setUrl("/error");
 		}
-
-		redirectAttributes.addFlashAttribute("flash",
-				new FlashMessage("Product added to cart", FlashMessage.Status.SUCCESS));
 
 		return redirect;
 	}
