@@ -1,9 +1,6 @@
 package com.acme.ecommerce.controller;
 
-import com.acme.ecommerce.domain.Product;
-import com.acme.ecommerce.domain.ProductPurchase;
-import com.acme.ecommerce.domain.Purchase;
-import com.acme.ecommerce.domain.ShoppingCart;
+import com.acme.ecommerce.domain.*;
 import com.acme.ecommerce.service.ProductService;
 import com.acme.ecommerce.service.PurchaseService;
 import org.slf4j.Logger;
@@ -54,7 +51,10 @@ public class CartController {
 				subTotal = subTotal.add(pp.getProduct().getPrice().multiply(new BigDecimal(pp.getQuantity())));
 			}
 
-			model.addAttribute("subTotal", subTotal);
+			if (!subTotal.equals(new BigDecimal(0))) {
+				model.addAttribute("subTotal", subTotal);
+			}
+
 		} else {
 			logger.error("No purchases Found for session ID=" + session.getId());
 			return "redirect:/error";
