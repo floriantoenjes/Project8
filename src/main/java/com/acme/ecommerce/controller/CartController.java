@@ -196,7 +196,8 @@ public class CartController {
 	}
 
 	@RequestMapping(path="/remove", method = RequestMethod.POST)
-	public RedirectView removeFromCart(@ModelAttribute(value="productId") long productId) {
+	public RedirectView removeFromCart(@ModelAttribute(value="productId") long productId,
+									   RedirectAttributes redirectAttributes) {
 		logger.debug("Removing Product: " + productId);
 		RedirectView redirect = new RedirectView("/cart");
 		redirect.setExposeModelAttributes(false);
@@ -217,6 +218,8 @@ public class CartController {
 							product.setQuantity(stockQuantity + purchaseQuantity);
 							productService.save(product);
 
+							redirectAttributes.addFlashAttribute("flash",
+									new FlashMessage("Product removed", FlashMessage.Status.SUCCESS));
 							logger.debug("Removed " + updateProduct.getName());
 							break;
 						}
