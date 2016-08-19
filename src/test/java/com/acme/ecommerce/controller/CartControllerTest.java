@@ -1,10 +1,7 @@
 package com.acme.ecommerce.controller;
 
 import com.acme.ecommerce.Application;
-import com.acme.ecommerce.domain.Product;
-import com.acme.ecommerce.domain.ProductPurchase;
-import com.acme.ecommerce.domain.Purchase;
-import com.acme.ecommerce.domain.ShoppingCart;
+import com.acme.ecommerce.domain.*;
 import com.acme.ecommerce.service.ProductService;
 import com.acme.ecommerce.service.PurchaseService;
 import org.hamcrest.Matchers;
@@ -28,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -125,6 +123,19 @@ public class CartControllerTest {
 				.andDo(print())
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/error"));
+	}
+
+	@Test
+	public void addToCartFlashMessageTest() throws Exception {
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/add").param("quantity", "1").param("productId", "1"))
+				.andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/product/"))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)));
 	}
 
 	@Test
@@ -295,7 +306,7 @@ public class CartControllerTest {
 				.param("productId", "1"))
 				.andDo(print())
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/cart"))
+				.andExpect(redirectedUrl("/product/"))
                 .andExpect(flash().attribute("error", Matchers.equalTo("quantity")));
 	}
 
