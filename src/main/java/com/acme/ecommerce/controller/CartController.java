@@ -162,10 +162,15 @@ public class CartController {
 									updateProduct.setQuantity(stockQuantity + (oldQuantity - newQuantity));
 								}
 
+								redirectAttributes.addFlashAttribute("flash",
+										new FlashMessage("Updated cart", FlashMessage.Status.SUCCESS));
 								logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
 							}  else if (stockQuantity < newQuantity) {
-								logger.error("Attempt to update to a higher quantity than available");
+								redirectAttributes.addFlashAttribute("flash",
+										new FlashMessage("Cannot update to higher quantity than available",
+												FlashMessage.Status.FAILED));
 								redirectAttributes.addFlashAttribute("error", "quantity");
+								logger.error("Attempt to update to a higher quantity than available");
 								redirect.setUrl("/cart");
 							}  else {
 								purchase.getProductPurchases().remove(pp);
@@ -236,7 +241,7 @@ public class CartController {
 	}
 
 	@RequestMapping(path="/empty", method = RequestMethod.POST)
-	public RedirectView emptyCart() {
+	public RedirectView emptyCart(RedirectAttributes redirectAttributes) {
 		RedirectView redirect = new RedirectView("/product/");
 		redirect.setExposeModelAttributes(false);
 
@@ -252,6 +257,7 @@ public class CartController {
 				productService.save(product);
 			}
 			purchase.getProductPurchases().clear();
+			redirectAttributes.addFlashAttribute("flash", new FlashMessage("Emptied cart", FlashMessage.Status.SUCCESS));
 			sCart.setPurchase(purchaseService.save(purchase));
 		} else {
 			logger.error("Unable to find shopping cart for update");
