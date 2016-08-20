@@ -99,8 +99,8 @@ public class CartControllerTest {
 
 		when(sCart.getPurchase()).thenReturn(null);
 		mockMvc.perform(MockMvcRequestBuilders.get("/cart")).andDo(print())
-				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/error"));
+				.andExpect(status().isOk())
+				.andExpect(view().name("cart"));
 	}
 
 	@Test

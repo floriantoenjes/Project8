@@ -57,7 +57,7 @@ public class CartController {
 
 		} else {
 			logger.error("No purchases Found for session ID=" + session.getId());
-			return "redirect:/error";
+//			return "redirect:/error";
 		}
 		return "cart";
 	}

@@ -94,8 +94,8 @@ public class ProductControllerTest {
 	public void getProductDetailInvalidId() throws Exception {
 		when(productService.findById(1L)).thenReturn(null);
 		mockMvc.perform(MockMvcRequestBuilders.get("/product/detail/1"))
-			.andExpect(status().is3xxRedirection())
-		    .andExpect(redirectedUrl("/error"));
+			.andExpect(status().isOk())
+		    .andExpect(view().name("product_detail_unknown"));
 	}
 
 	@Test
