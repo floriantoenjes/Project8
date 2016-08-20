@@ -88,7 +88,8 @@ public class ProductController {
 			}
     	} else {
     		logger.error("Product " + id + " Not Found!");
-    		return "redirect:/error";
+//    		return "redirect:/error";
+    		return "product_detail_unknown";
     	}
 
         return "product_detail";
